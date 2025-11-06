@@ -1,0 +1,71 @@
+{
+  "name": "atomic-arbitrage-bot",
+  "version": "1.0.0",
+  "description": "Fully autonomous flash loan powered arbitrage bot for DeFi",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc",
+    "compile": "hardhat compile",
+    "test": "hardhat test",
+    "test:unit": "hardhat test test/unit/**/*.test.ts",
+    "test:integration": "hardhat test test/integration/**/*.test.ts",
+    "test:fork": "hardhat test test/fork/**/*.test.ts",
+    "deploy:local": "hardhat run scripts/deploy/deploy-arbitrage.ts --network localhost",
+    "deploy:goerli": "hardhat run scripts/deploy/deploy-arbitrage.ts --network goerli",
+    "deploy:sepolia": "hardhat run scripts/deploy/deploy-arbitrage.ts --network sepolia",
+    "start": "node dist/index.js",
+    "dev": "ts-node src/index.ts",
+    "lint": "eslint . --ext .ts",
+    "lint:fix": "eslint . --ext .ts --fix",
+    "format": "prettier --write \"**/*.{ts,js,json,md,sol}\"",
+    "format:check": "prettier --check \"**/*.{ts,js,json,md,sol}\"",
+    "clean": "rm -rf dist cache artifacts typechain-types"
+  },
+  "keywords": [
+    "defi",
+    "arbitrage",
+    "flash-loan",
+    "ethereum",
+    "dex",
+    "bot",
+    "mev"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "@flashbots/ethers-provider-bundle": "^1.0.0",
+    "axios": "^1.6.2",
+    "dotenv": "^16.3.1",
+    "ethers": "^6.9.0",
+    "prom-client": "^15.1.0",
+    "redis": "^4.6.11",
+    "winston": "^3.11.0"
+  },
+  "devDependencies": {
+    "@nomicfoundation/hardhat-toolbox": "^4.0.0",
+    "@nomiclabs/hardhat-ethers": "^2.2.3",
+    "@nomiclabs/hardhat-etherscan": "^3.1.7",
+    "@openzeppelin/contracts": "^5.0.1",
+    "@typechain/ethers-v6": "^0.5.1",
+    "@typechain/hardhat": "^9.1.0",
+    "@types/chai": "^4.3.11",
+    "@types/mocha": "^10.0.6",
+    "@types/node": "^20.10.5",
+    "@typescript-eslint/eslint-plugin": "^6.15.0",
+    "@typescript-eslint/parser": "^6.15.0",
+    "chai": "^4.3.10",
+    "eslint": "^8.55.0",
+    "hardhat": "^2.19.2",
+    "hardhat-gas-reporter": "^2.3.0",
+    "prettier": "^3.1.1",
+    "prettier-plugin-solidity": "^1.2.0",
+    "solidity-coverage": "^0.8.5",
+    "ts-node": "^10.9.2",
+    "typechain": "^8.3.2",
+    "typescript": "^5.3.3"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=9.0.0"
+  }
+}
