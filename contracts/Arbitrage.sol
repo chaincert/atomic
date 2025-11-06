@@ -2,8 +2,8 @@
 pragma solidity ^0.8.20;
 
 import "@openzeppelin/contracts/access/Ownable.sol";
-import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
-import "@openzeppelin/contracts/security/Pausable.sol";
+import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
+import "@openzeppelin/contracts/utils/Pausable.sol";
 import "./interfaces/common/IERC20.sol";
 import "./interfaces/aave/IPool.sol";
 import "./interfaces/aave/IFlashLoanReceiver.sol";
@@ -21,6 +21,7 @@ contract Arbitrage is Ownable, ReentrancyGuard, Pausable, IFlashLoanReceiver, IF
     // Flash loan providers
     address public aavePool;
     address public balancerVault;
+    address public immutable WETH;
 
     // DEX routers
     mapping(address => bool) public approvedDEXs;
@@ -50,13 +51,20 @@ contract Arbitrage is Ownable, ReentrancyGuard, Pausable, IFlashLoanReceiver, IF
      * @notice Constructor
      * @param _aavePool Address of Aave V3 Pool
      * @param _balancerVault Address of Balancer V2 Vault
+     * @param _weth Address of WETH token
      */
-    constructor(address _aavePool, address _balancerVault) {
+    constructor(
+        address _aavePool,
+        address _balancerVault,
+        address _weth
+    ) Ownable(msg.sender) {
         require(_aavePool != address(0), "Invalid Aave Pool address");
         require(_balancerVault != address(0), "Invalid Balancer Vault address");
+        require(_weth != address(0), "Invalid WETH address");
         
         aavePool = _aavePool;
         balancerVault = _balancerVault;
+        WETH = _weth;
         
         // Approve flash loan providers
         approvedFlashLoanProviders[_aavePool] = true;
@@ -234,12 +242,39 @@ contract Arbitrage is Ownable, ReentrancyGuard, Pausable, IFlashLoanReceiver, IF
         // 2. Calculate minimum output amounts with slippage tolerance
         // 3. Handle different DEX types (V2 vs V3)
         
-        // For now, this will need to be customized based on actual use case
-        // Placeholder for actual swap logic
-        
-        // ... swap logic would go here ...
+        // Approve buyDex to spend the token
+        IERC20(token).approve(buyDex, amount);
 
-        // After swaps, calculate profit
+        // Define the swap path for the first trade (e.g., Token -> WETH)
+        address[] memory path1 = new address[](2);
+        path1[0] = token;
+        path1[1] = WETH;
+
+        // Execute the first swap
+        uint[] memory amounts1 = IUniswapV2Router02(buyDex).swapExactTokensForTokens(
+            amount,
+            0, // Accept any amount of output
+            path1,
+            address(this),
+            block.timestamp
+        );
+
+        // Approve sellDex to spend the intermediary token
+        IERC20(WETH).approve(sellDex, amounts1[1]);
+
+        // Define the swap path for the second trade (e.g., WETH -> Token)
+        address[] memory path2 = new address[](2);
+        path2[0] = WETH;
+        path2[1] = token;
+
+        // Execute the second swap
+        IUniswapV2Router02(sellDex).swapExactTokensForTokens(
+            amounts1[1],
+            0, // Accept any amount of output
+            path2,
+            address(this),
+            block.timestamp
+        );
         uint256 finalBalance = IERC20(token).balanceOf(address(this));
         profit = finalBalance > initialBalance ? finalBalance - initialBalance : 0;
 

@@ -9,7 +9,7 @@ async function main() {
   // Get the deployer account
   const [deployer] = await ethers.getSigners();
   console.log('Deploying contracts with account:', deployer.address);
-  console.log('Account balance:', (await deployer.getBalance()).toString());
+  console.log('Account balance:', (await ethers.provider.getBalance(deployer.address)).toString());
 
   // Get contract addresses from environment or use defaults
   const aavePool = process.env.AAVE_POOL_ADDRESS || '0x87870Bca3F3fD6335C3F4ce8392D69350B4fA4E2';
@@ -22,9 +22,10 @@ async function main() {
   const Arbitrage = await ethers.getContractFactory('Arbitrage');
   const arbitrage = await Arbitrage.deploy(aavePool, balancerVault);
 
-  await arbitrage.deployed();
+  await arbitrage.waitForDeployment();
 
-  console.log('Arbitrage contract deployed to:', arbitrage.address);
+  const arbitrageAddress = await arbitrage.getAddress();
+  console.log('Arbitrage contract deployed to:', arbitrageAddress);
 
   // Configure DEX approvals
   console.log('\nConfiguring DEX approvals...');
@@ -49,8 +50,10 @@ async function main() {
   console.log('Approved Uniswap V3 Router:', uniswapV3Router);
 
   console.log('\n=== Deployment Summary ===');
-  console.log('Network:', (await ethers.provider.getNetwork()).name);
-  console.log('Arbitrage Contract:', arbitrage.address);
+  const network = await ethers.provider.getNetwork();
+  console.log('Network:', network.name);
+  console.log('Chain ID:', network.chainId);
+  console.log('Arbitrage Contract:', arbitrageAddress);
   console.log('Deployer:', deployer.address);
   console.log('Aave Pool:', aavePool);
   console.log('Balancer Vault:', balancerVault);
@@ -58,12 +61,12 @@ async function main() {
 
   // Save deployment info
   console.log('Add this to your .env file:');
-  console.log(`ARBITRAGE_CONTRACT_ADDRESS=${arbitrage.address}`);
+  console.log(`ARBITRAGE_CONTRACT_ADDRESS=${arbitrageAddress}`);
 
   // Verification command
   if (process.env.ETHERSCAN_API_KEY) {
     console.log('\nTo verify the contract, run:');
-    console.log(`npx hardhat verify --network ${(await ethers.provider.getNetwork()).name} ${arbitrage.address} ${aavePool} ${balancerVault}`);
+    console.log(`npx hardhat verify --network ${network.name} ${arbitrageAddress} ${aavePool} ${balancerVault}`);
   }
 }
 

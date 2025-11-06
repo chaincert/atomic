@@ -41,7 +41,6 @@ interface IPool {
     /**
      * @notice Returns the state and configuration of the reserve
      * @param asset The address of the underlying asset
-     * @return The configuration of the reserve
      */
     function getReserveData(address asset)
         external

@@ -12,7 +12,7 @@ const ARBITRAGE_ABI = [
   'function pause() external',
   'function unpause() external',
   'function paused() external view returns (bool)',
-  'event ArbitrageExecuted(address indexed token, uint256 amount, uint256 profit, address indexed buyDex, address indexed sellDex)',
+  'event ArbitrageExecuted(address indexed token, uint256 amount, uint256 profit, address indexed buyDex, address indexed sellDex, address WETH)',
 ];
 
 /**
